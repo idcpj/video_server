@@ -2,17 +2,19 @@ package main
 
 import (
 	"net/http"
-
 	"github.com/julienschmidt/httprouter"
 )
 
-func RegisetHandle() *httprouter.Router {
+
+
+func RegisetHandlers() *httprouter.Router {
 	router := httprouter.New()
-	router.POST("/User", createUser)
+	router.POST("/user", CreateUser)
+	router.POST("/user/:user_name", Login)
 	return router
 }
 
 func main() {
-	r := RegisetHandle()
-	http.listenAndServer(":8000", r)
+	r := RegisetHandlers()
+	http.ListenAndServe(":8000", r)
 }
