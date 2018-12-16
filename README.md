@@ -1,3 +1,10 @@
+## 运行
+```
+> cd video_server/api
+> go install
+
+> api
+```
 ## 技术栈
 ### 路由管理
 github.com/julienschmidt/httprouter

@@ -32,7 +32,7 @@ func RegisetHandlers() *httprouter.Router {
 
 func main() {
 	r := RegisetHandlers()
-	mh := NewMiddleWareHandle(r)
+	//mh := NewMiddleWareHandle(r)
 
-	http.ListenAndServe(":8000", mh.r)
+	http.ListenAndServe(":8000", r)
 }
