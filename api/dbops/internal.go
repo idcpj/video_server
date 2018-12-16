@@ -54,10 +54,11 @@ func RetrieveAllSessions() (*sync.Map, error) {
 	for rows.Next() {
 		ss := &defs.SimpleSession{}
 		id := ""
-		if e := rows.Scan(&id, ss.UserName, ss.TTL); e == nil {
-			m.Store(id, ss)
-			log.Printf("session id : = %v ttl: %v", id, ss.TTL)
+		if e := rows.Scan(&id, &ss.TTL, &ss.UserName); e != nil {
+			continue
+			log.Printf("session id : = %v ss: %v", id, ss)
 		}
+		m.Store(id, ss)
 	}
 	return m, nil
 }

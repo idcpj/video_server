@@ -4,13 +4,15 @@ import (
 	"database/sql"
 	"testing"
 	"time"
+	"video_server/api/utils"
 )
 
 var (
-	video_id  string
-	user_id   int
-	user_name = "cpj"
-	pwd       = "123"
+	video_id   string
+	user_id    int
+	session_id string
+	user_name  = "cpj"
+	pwd        = "123"
 )
 
 func clearTables() {
@@ -24,7 +26,7 @@ func clearTables() {
 func TestMain(m *testing.M) {
 	clearTables()
 	m.Run()
-	clearTables()
+	//clearTables()
 }
 
 //按顺序执行
@@ -52,6 +54,15 @@ func TestCommentWorkFlow(t *testing.T) {
 	t.Run("create_comment", testAddNewComment)
 	t.Run("list_comment", testListComments)
 }
+func TestSessionWorkFlow(t *testing.T) {
+	clearTables()
+	session_id = ""
+	t.Run("create_session", testInsertSession)
+	t.Run("get_session", testRetrieveSession)
+	t.Run("get_all_session", testRetrieveAllSessions)
+	//t.Run("delete_session", TestDeleteSession)
+}
+
 func testAddUserCredential(t *testing.T) {
 	err := AddUserCredential(user_name, pwd)
 	if err != nil {
@@ -118,6 +129,47 @@ func testAddNewComment(t *testing.T) {
 func testListComments(t *testing.T) {
 	comments, e := ListComments(video_id, time.Now().AddDate(0, 0, -1).Format("2006-01-02 15:04:05"), time.Now().AddDate(0, 0, +1).Format("2006-01-02 15:04:05"))
 	if comments == nil || e != nil {
+		t.Errorf("%v", e)
+	}
+}
+
+//创建两个 session
+func testInsertSession(t *testing.T) {
+	session_id, _ = utils.NewUuid()
+	ct := time.Now().Unix()
+	ttl := ct + 30*60
+	err := InsertSession(session_id, ttl, user_name)
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+	session_id, _ = utils.NewUuid()
+	err = InsertSession(session_id, ttl, user_name)
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+}
+func testRetrieveSession(t *testing.T) {
+	session, e := RetrieveSession(session_id)
+	if session == nil || e != nil {
+		t.Errorf("%s", e)
+	}
+}
+func testRetrieveAllSessions(t *testing.T) {
+	syncMap, e := RetrieveAllSessions()
+
+	if e != nil {
+		t.Errorf("%v", e)
+	}
+	value, ok := syncMap.Load(session_id)
+	if !ok {
+		t.Errorf("获取 session 失败 session_id=%v  value=%v", session_id, value)
+	}
+
+}
+
+func TestDeleteSession(t *testing.T) {
+	e := DeleteSession(session_id)
+	if e != nil {
 		t.Errorf("%v", e)
 	}
 }
