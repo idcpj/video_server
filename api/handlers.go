@@ -15,7 +15,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-//@link curl -d '{"user_name":"idcpj","pwd":"12345"}' -H 'Content-Type: application/json' -X POST http://127.0.0.1:8000/user
+//@test curl -d '{"user_name":"idcpj","pwd":"12345"}' -H 'Content-Type: application/json' -X POST http://127.0.0.1:8000/user
 func CreateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	res, _ := ioutil.ReadAll(r.Body)
 	ubody := &defs.UserCredential{}

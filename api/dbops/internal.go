@@ -8,6 +8,7 @@ import (
 	"video_server/api/defs"
 )
 
+//添加 session
 func InsertSession(sid string, ttl int64, uname string) error {
 	ttlstr := strconv.FormatInt(ttl, 10)
 	stmt, e := dbConn.Prepare(`INSERT INTo sessions (session_id,TTL,login_name) values(?,?,?)`)
@@ -22,6 +23,7 @@ func InsertSession(sid string, ttl int64, uname string) error {
 	return nil
 }
 
+//获取 session
 func RetrieveSession(sid string) (*defs.SimpleSession, error) {
 	ss := &defs.SimpleSession{}
 	stmt, e := dbConn.Prepare(`SELECT TTL,login_name FROM sessions where session_id=?`)
