@@ -1,4 +1,4 @@
-package dbpos
+package dbops
 
 import (
 	"database/sql"
@@ -47,7 +47,7 @@ func TestCommentWorkFlow(t *testing.T) {
 	video_id = ""
 	t.Run("create_user", testAddUserCredential)
 	t.Run("get_user", testGetUserCredential)
-	t.Run("creat_video", testAddNewVideo)
+	t.Run("create_video", testAddNewVideo)
 	t.Run("create_comment", testAddNewComment)
 	t.Run("create_comment", testAddNewComment)
 	t.Run("list_comment", testListComments)

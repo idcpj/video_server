@@ -2,10 +2,26 @@ package main
 
 import (
 	"net/http"
+
 	"github.com/julienschmidt/httprouter"
 )
 
+type minddleWarehandle struct {
+	r *httprouter.Router
+}
 
+func NewMiddleWareHandle(r *httprouter.Router) minddleWarehandle {
+	m := minddleWarehandle{}
+	m.r = r
+	return m
+}
+
+//在 原始的 ServerHttp 上封装一层 ,中间件的原理
+func (m minddleWarehandle) ServerHttp(w http.ResponseWriter, r *http.Request) {
+	//check session
+	ValidateUserSession(r)
+	m.r.ServeHTTP(w, r)
+}
 
 func RegisetHandlers() *httprouter.Router {
 	router := httprouter.New()
@@ -16,5 +32,7 @@ func RegisetHandlers() *httprouter.Router {
 
 func main() {
 	r := RegisetHandlers()
-	http.ListenAndServe(":8000", r)
+	mh := NewMiddleWareHandle(r)
+
+	http.ListenAndServe(":8000", mh.r)
 }
