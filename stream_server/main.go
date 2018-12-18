@@ -4,8 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"os"
-
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -15,18 +13,14 @@ type middleware struct {
 }
 
 func NewMidWare(r *httprouter.Router, cc int) *middleware {
-	log.Printf("new midWare")
 	m := &middleware{}
 	m.r = r
 	m.l = NewConnLimiter(cc)
 	return m
 }
 
-func (m *middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Println("getCon ...")
-	os.Exit(0)
+func (m middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !m.l.GetConn() {
-		log.Println("getCon is error")
 		sendErrorResponse(w, http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
 		return
 	}
@@ -45,6 +39,6 @@ func RegisterHandlers() *httprouter.Router {
 func main() {
 	log.Println("init stream_server post is 9000")
 	r := RegisterHandlers()
-	m := NewMidWare(r, 2)
-	http.ListenAndServe(":9000", m.r)
+	m := NewMidWare(r, 1)
+	http.ListenAndServe(":9000", m) // //第二参数是 传入 m 不可传入m.r
 }
