@@ -14,6 +14,7 @@ func (c ConnLimiter) String() string {
 	return fmt.Sprintf("c.concurrentConn = %v bucket = %v", c.concurrentConn, c.bucket)
 }
 
+// POST http://127.0.0.1:8000/user/cpj HTTP/1.1
 func NewConnLimiter(cc int) *ConnLimiter {
 	return &ConnLimiter{
 		concurrentConn: cc,
