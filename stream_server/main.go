@@ -33,10 +33,13 @@ func RegisterHandlers() *httprouter.Router {
 	router := httprouter.New()
 	router.GET("/videos/:vid-id", streamHandler)
 	router.POST("/upload/:vid-id", uploadHandler)
+	router.GET("/testpage", testPageHandler)
 	return router
 }
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+
 	log.Println("init stream_server post is 9000")
 	r := RegisterHandlers()
 	m := NewMidWare(r, 1)

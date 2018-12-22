@@ -29,7 +29,6 @@ func (cl *ConnLimiter) GetConn() bool {
 	}
 	cl.bucket <- 1
 
-	log.Println(cl)
 	return true
 }
 
