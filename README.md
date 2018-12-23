@@ -1,10 +1,11 @@
 ## 运行
+每个模块都如此 运行
 ```
 > cd video_server/api
 > go install
-
 > api
 ```
+
 ## 技术栈
 ### 路由管理
 github.com/julienschmidt/httprouter
