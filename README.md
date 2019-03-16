@@ -24,3 +24,8 @@ mh := NewMiddleWareHandle(r)
 接口的参数即可实现该接口,所有只要 mh 最后返回的是 ServerHttp 接口即可
 http.ListenAndServe(":8000", mh.r) 
 ```
+
+## 编译
+在模块下 
+`go install` 
+在 go 的`bin`现在查看生成的可执行文件
