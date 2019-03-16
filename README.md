@@ -29,3 +29,5 @@ http.ListenAndServe(":8000", mh.r)
 在模块下 
 `go install` 
 在 go 的`bin`现在查看生成的可执行文件
+编译运行
+`go install ./web && ./build.sh   && /Users/idcpj/go/bin/video_server_web_ui/web`

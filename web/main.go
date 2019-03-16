@@ -14,8 +14,8 @@ func RegisterHandler() *httprouter.Router {
 	router.GET("/", HomeHandler)
 	router.POST("/", HomeHandler)
 
-	//router.GET("/userhome", userHomeHandler)
-	//router.POST("/userhome", userHomeHandler)
+	router.GET("/userhome", UserHomeHandler)
+	router.POST("/userhome", UserHomeHandler)
 	//
 	//router.POST("/api", apihandler)
 
@@ -30,6 +30,7 @@ func main() {
 	e := http.ListenAndServe(":8000", r)
 	if e != nil {
 		log.Error("create server is error")
+		return
 	}
 	log.Println("create server is success ,the port is 8000")
 

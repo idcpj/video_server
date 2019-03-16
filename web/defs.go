@@ -1,3 +1,3 @@
 package main
 
-const TEMPLATE_PATH = "./templates"
+const TEMPLATE_PATH = "./templates/"
