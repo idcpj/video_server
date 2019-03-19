@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"html/template"
+	"io"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/lunny/log"
@@ -65,5 +68,25 @@ func UserHomeHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 	}
 
 	t.Execute(w, p)
+
+}
+
+func Apihandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// not post
+	if r.Method != http.MethodPost {
+		re, _ := json.Marshal(ErrorRequestNotRecongized)
+		io.WriteString(w, string(re))
+		return
+	}
+	res, _ := ioutil.ReadAll(r.Body)
+	apiBody := &ApiBody{}
+	if e := json.Unmarshal(res, apiBody); e != nil {
+		re, _ := json.Marshal(ErrorRequestBodyParseFailed)
+		io.WriteString(w, string(re))
+		return
+	}
+
+	request(apiBody, w, r)
+	defer r.Body.Close()
 
 }

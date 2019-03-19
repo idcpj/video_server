@@ -1,9 +1,8 @@
 package main
 
 import (
+	"log"
 	"net/http"
-
-	"github.com/lunny/log"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -17,7 +16,7 @@ func RegisterHandler() *httprouter.Router {
 	router.GET("/userhome", UserHomeHandler)
 	router.POST("/userhome", UserHomeHandler)
 	//
-	//router.POST("/api", apihandler)
+	router.POST("/api", Apihandler)
 
 	router.ServeFiles("/statics/*filepath", http.Dir(TEMPLATE_PATH))
 
@@ -29,7 +28,7 @@ func main() {
 	r := RegisterHandler()
 	e := http.ListenAndServe(":8000", r)
 	if e != nil {
-		log.Error("create server is error")
+		log.Print("create server is error")
 		return
 	}
 	log.Println("create server is success ,the port is 8000")
