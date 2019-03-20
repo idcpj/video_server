@@ -6,6 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 
 	"github.com/lunny/log"
 
@@ -88,5 +90,13 @@ func Apihandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	request(apiBody, w, r)
 	defer r.Body.Close()
+
+}
+
+//proxy   127.0.0.1:8080->127.0.0.1:9000
+func proxyUploadHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	parse, _ := url.Parse("http://127.0.0.1:9000/")
+	proxy := httputil.NewSingleHostReverseProxy(parse)
+	proxy.ServeHTTP(w, r)
 
 }

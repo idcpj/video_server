@@ -15,8 +15,10 @@ func RegisterHandler() *httprouter.Router {
 
 	router.GET("/userhome", UserHomeHandler)
 	router.POST("/userhome", UserHomeHandler)
-	//
+
 	router.POST("/api", Apihandler)
+
+	router.POST("/upload/:vid-id", proxyUploadHandler)
 
 	router.ServeFiles("/statics/*filepath", http.Dir(TEMPLATE_PATH))
 

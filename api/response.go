@@ -7,8 +7,8 @@ import (
 	"video_server/api/defs"
 )
 
-func sendErrorResponse(w http.ResponseWriter, errResp defs.ErroResponse) {
-	w.WriteHeader(errResp.HttpSc)
+func sendErrorResponse(w http.ResponseWriter, errResp defs.ErrResponse) {
+	w.WriteHeader(errResp.HttpSC)
 	res, _ := json.Marshal(&errResp.Error)
 	io.WriteString(w, string(res))
 }

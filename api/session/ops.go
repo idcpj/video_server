@@ -30,7 +30,7 @@ func GenerateNewSessionId(un string) string {
 	id, _ := utils.NewUuid()
 	ct := time.Now().Unix()
 	ttl := ct + 30*60
-	ss := &defs.SimpleSession{UserName: un, TTL: ttl}
+	ss := &defs.SimpleSession{Username: un, TTL: ttl}
 	sessionMap.Store(id, ss)
 	dbops.InsertSession(id, ttl, un)
 	return id
@@ -45,7 +45,7 @@ func IsSessionExpired(sid string) (string, bool) {
 			deleteExpiredSession(sid)
 			return "", true
 		}
-		return ss.(*defs.SimpleSession).UserName, false
+		return ss.(*defs.SimpleSession).Username, false
 	}
 	return "", true
 }

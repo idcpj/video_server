@@ -3,146 +3,195 @@ package dbops
 import (
 	"database/sql"
 	"log"
-
+	"time"
 	"video_server/api/defs"
 	"video_server/api/utils"
-
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func AddUserCredential(loginName, pwd string) error {
-	stmt, e := dbConn.Prepare("insert into users  (login_name,pwd) values(?,?)")
-	if e != nil {
-		return e
+func AddUserCredential(loginName string, pwd string) error {
+	stmtIns, err := dbConn.Prepare("INSERT INTO users(login_name, pwd) values(?,?)")
+	if err != nil {
+		return err
 	}
-
-	_, er := stmt.Exec(loginName, pwd)
-	if er != nil {
-		return er
+	_, err = stmtIns.Exec(loginName, pwd)
+	if err != nil {
+		return err
 	}
-	defer stmt.Close()
+	defer stmtIns.Close()
 	return nil
 }
 
-func GetUserCredential(loginName string) (*defs.UserCredential, error) {
-	stmt, e := dbConn.Prepare("select  id,pwd from  users WHERE login_name=?")
-	if e != nil {
-		log.Printf("%s", e)
-		return nil, e
+func GetUserCredential(loginName string) (string, error) {
+	stmtOut, err := dbConn.Prepare("SELECT pwd FROM users WHERE login_name = ?")
+	if err != nil {
+		log.Printf("%s", err)
+		return "", err
 	}
-	user := &defs.UserCredential{}
-	err := stmt.QueryRow(loginName).Scan(&user.Id, &user.Pwd)
-	if err != nil || err == sql.ErrNoRows {
-		return nil, err
+	var pwd string
+	err = stmtOut.QueryRow(loginName).Scan(&pwd)
+	if err != nil && err != sql.ErrNoRows {
+		return "", err
 	}
-	defer stmt.Close()
-	user.UserName = loginName
-	return user, nil
-
+	defer stmtOut.Close()
+	return pwd, nil
 }
 
 func DeleteUser(loginName string, pwd string) error {
-	stmt, e := dbConn.Prepare("delete from users WHERE login_name=? AND pwd=?")
-	if e != nil {
-		log.Printf("deleteuser error %s", e)
-		return e
+	stmtDel, err := dbConn.Prepare("DELETE FROM users WHERE login_name=? AND pwd=?")
+	if err != nil {
+		log.Printf("Delete user error: %s", err)
 	}
-	_, err := stmt.Exec(loginName, pwd)
+	_, err = stmtDel.Exec(loginName, pwd)
 	if err != nil {
 		return err
 	}
-	defer stmt.Close()
+	defer stmtDel.Close()
 	return nil
 }
 
-//创建视频列表
-func AddNewVideo(aid int, name string) (*defs.VideoInfo, error) {
-	id, e := utils.NewUuid()
-	if e != nil {
+func GetUser(loginName string) (*defs.User, error) {
+	stmtOut, err := dbConn.Prepare("SELECT id, pwd FROM users WHERE login_name=?")
+	if err != nil {
+		log.Printf("%s", err)
 		return nil, err
 	}
-	t := time.Now().Format("Jan 02 2006,15:04:05")
-
-	stmt, e := dbConn.Prepare(`insert into video_info (id,author_id,name,display_ctime) VALUES (?,?,?,?)`)
-	if e != nil {
-		return nil, e
+	var id int
+	var pwd string
+	err = stmtOut.QueryRow(loginName).Scan(&id, &pwd)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
 	}
-	_, error := stmt.Exec(id, aid, name, t)
-	if error != nil {
+	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	defer stmt.Close()
-	info := &defs.VideoInfo{Id: id, AuthorId: aid, Name: name, DisplayCtime: t}
-	return info, nil
-}
-func GetVideo(id string) (*defs.VideoInfo, error) {
-	stmt, e := dbConn.Prepare("select id,author_id,name,display_ctime FROM video_info WHERE id=?")
-	if e != nil {
-		return nil, e
-	}
-	video := &defs.VideoInfo{}
-	er := stmt.QueryRow(id).Scan(&video.Id, &video.AuthorId, &video.Name, &video.DisplayCtime)
-	if er != nil {
-		return nil, er
-	}
-	defer stmt.Close()
-	return video, nil
-}
-func DeleteVideo(id string) error {
-	stmt, e := dbConn.Prepare("DELETE FROM video_info WHERE id=?")
-	if e != nil {
-		return e
-	}
-	defer stmt.Close()
-	_, er := stmt.Exec(id)
-	if er != nil {
-		return er
-	}
-	return nil
+	res := &defs.User{Id: id, LoginName: loginName, Pwd: pwd}
+	defer stmtOut.Close()
+	return res, nil
 }
 
-func AddNewComment(vid string, aid int, content string) error {
-	uuid, e := utils.NewUuid()
-	if e != nil {
-		return e
+func AddNewVideo(aid int, name string) (*defs.VideoInfo, error) {
+	//create uuid
+	vid, err := utils.NewUUID()
+	if err != nil {
+		return nil, err
 	}
-	stmt, er := dbConn.Prepare(`INSERT into comments (id,video_id,author_Id,content,time)VALUES (?,?,?,?,?)`)
-	defer stmt.Close()
-	if er != nil {
-		return er
+	t := time.Now()
+	ctime := t.Format("Jan 02 2006, 15:04:05")
+	stmtIns, err := dbConn.Prepare(`INSERT INTO video_info
+		(id, author_id, name, display_ctime) VALUES(?,?,?,?)`)
+	if err != nil {
+		return nil, err
 	}
-	t := time.Now().Format("2006-01-02 15:04:05")
-	_, err := stmt.Exec(uuid, vid, aid, content, t)
+	_, err = stmtIns.Exec(vid, aid, name, ctime)
+	if err != nil {
+		return nil, err
+	}
+	res := &defs.VideoInfo{Id: vid, AuthorId: aid, Name: name, DisplayCtime: ctime}
+	defer stmtIns.Close()
+	return res, nil
+}
+
+func GetVideoInfo(vid string) (*defs.VideoInfo, error) {
+	stmtOut, err := dbConn.Prepare(`SELECT author_id, name, display_ctime FROM video_info 
+		WHERE id=?`)
+	if err != nil {
+		return nil, err
+	}
+	var aid int
+	var dct string
+	var name string
+	err = stmtOut.QueryRow(vid).Scan(&aid, &name, &dct)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	defer stmtOut.Close()
+	res := &defs.VideoInfo{Id: vid, AuthorId: aid, Name: name, DisplayCtime: dct}
+	return res, nil
+}
+
+func ListVideoInfo(uname string, from, to int) ([]*defs.VideoInfo, error) {
+	stmtOut, err := dbConn.Prepare(`SELECT video_info.id, video_info.author_id, video_info.name, video_info.display_ctime FROM video_info
+		INNER JOIN users ON video_info.author_id = users.id
+		WHERE users.login_name=? AND video_info.create_time > FROM_UNIXTIME(?) AND video_info.create_time<=FROM_UNIXTIME(?)
+		OREDER BY video_info.create_time DESC`)
+	var res []*defs.VideoInfo
+	if err != nil {
+		return res, err
+	}
+	rows, err := stmtOut.Query(uname, from, to)
+	if err != nil {
+		log.Printf("%s", err)
+		return res, err
+	}
+
+	for rows.Next() {
+		var id, name, ctime string
+		var aid int
+		if err := rows.Scan(&id, &aid, &name, &ctime); err != nil {
+			return res, err
+		}
+		vi := &defs.VideoInfo{Id: id, AuthorId: aid, Name: name, DisplayCtime: ctime}
+		res = append(res, vi)
+	}
+	defer stmtOut.Close()
+	return res, nil
+}
+
+func DeleteVideoInfo(vid string) error {
+	stmtDel, err := dbConn.Prepare("DELETE FROM video_info WHERE id = ?")
 	if err != nil {
 		return err
 	}
+	_, err = stmtDel.Exec(vid)
+	if err != nil {
+		return err
+	}
+	defer stmtDel.Close()
 	return nil
-
 }
 
-func ListComments(vid string, from, to string) ([]*defs.Comment, error) {
-	stmt, e := dbConn.Prepare(`SELECT comments.id,users.login_name,comments.content 
-								from comments inner JOIN users on comments.author_id = users.id 
-								WHERE  comments.video_id=? AND comments.time > ? AND comments.time <=  ?`)
-	defer stmt.Close()
-	if e != nil {
-		return nil, e
+func AddNewComments(vid string, aid int, content string) error {
+	id, err := utils.NewUUID()
+	if err != nil {
+		return err
 	}
-	rows, er := stmt.Query(vid, from, to)
-	if er != nil {
-		return nil, er
+	stmtIns, err := dbConn.Prepare("INSERT INTO comments(id, video_id, author_id, content) values(?,?,?,?)")
+	if err != nil {
+		return err
 	}
+	_, err = stmtIns.Exec(id, vid, aid, content)
+	if err != nil {
+		return err
+	}
+	defer stmtIns.Close()
+	return nil
+}
+
+func ListComments(vid string, from, to int) ([]*defs.Comment, error) {
+	stmtOut, err := dbConn.Prepare(`SELECT comments.id, users.Login_name, comments.content FROM comments 
+		INNER JOIN users ON comments.author_id = users.id
+		WHERE comments.video_id = ? AND comments.time >  FROM_UNIXTIME(?) AND comments.time<=FROM_UNIXTIME(?)
+		OREDER BY comments.time DESC`)
 	var res []*defs.Comment
-	for rows.Next() {
-		var id, name, content string
-		if er := rows.Scan(&id, &name, &content); er != nil {
-			return res, err
-		}
-		c := &defs.Comment{Id: id, VideoId: vid, AuthorName: name, Content: content}
-		res = append(res, c)
+
+	rows, err := stmtOut.Query(vid, from, to)
+	if err != nil {
+		return res, err
 	}
 
+	for rows.Next() {
+		var id, name, content string
+		if err := rows.Scan(&id, &name, &content); err != nil {
+			return res, err
+		}
+		c := &defs.Comment{Id: id, VideoId: vid, Author: name, Content: content}
+		res = append(res, c)
+	}
+	defer stmtOut.Close()
 	return res, nil
 }
