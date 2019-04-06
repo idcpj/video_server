@@ -44,6 +44,7 @@ func streamHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) 
 		return
 	}
 	//把文件放入响应中
+
 	w.Header().Set("Content-Type", "video/mp4")
 	http.ServeContent(w, r, "", time.Now(), video)
 
